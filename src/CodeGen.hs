@@ -29,5 +29,11 @@ generateHTML' (LI str) = "<li>" ++ str ++ "</li>\n"
 -- ein Absatz
 generateHTML' (P str)  = "<p>" ++ str ++ "</p>\n"
 
+-- Fett + kursiv
+generateHTML' (BS)  = "<b>"
+generateHTML' (BE)  = "</b>"
+generateHTML' (KS)  = "<i>"
+generateHTML' (KE)  = "</i>"
+
 -- alles andere (?) wird für den Moment ignoriert
 generateHTML' _ = ""

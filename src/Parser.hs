@@ -17,8 +17,16 @@ parse (T_H i : T_Text str: xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ S
 
 
 -- Fett erkennen
+parse(T_B:xs) b k  
+                  | b = maybe Nothing (\(Sequence ast) -> Just $ Sequence (BE : ast)) $ parse xs False k
+                  | otherwise = maybe Nothing (\(Sequence ast) -> Just $ Sequence (BS : ast)) $ parse xs True k
+-- Kursiv erkennen
+parse(T_K:xs) b k  
+                  | k = maybe Nothing (\(Sequence ast) -> Just $ Sequence (KE : ast)) $ parse xs b False
+                  | otherwise = maybe Nothing (\(Sequence ast) -> Just $ Sequence (KS : ast)) $ parse xs b True
+                  
 -- unsortierte Liste:
--- einem listitem-Marker muss auch ein Text folgen. Das gibt zusammen ein Listitem im AST.
+-- einem listitem-Marker muss auch ein Text/Kursiv/Bolt folgen. Das gibt zusammen ein Listitem im AST.
 -- es wird mit der Hilfsfunktion addULI eingefügt
 parse (T_ULI level: T_Text str: xs) b k = maybe Nothing (\ast -> Just $ addULI level (LI str) ast) $ parse xs b k
 

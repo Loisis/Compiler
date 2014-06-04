@@ -44,17 +44,41 @@ scan ('_':'_':xs) level   = maybe Nothing (\tokens -> Just (T_B:tokens))    $ sc
 
 -- Kursiv erkennen
 scan ('*':xs) level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
-scan ('_':xs) level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
+scan ('_':xs)level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
+
+
 
 -- wenn wir eine Zahl mit einem Punkt lesen, dann ist es eine geordnete Liste
 -- TODO: noch sind wir sicher am Zeilenanfang, aber nicht mehr unbedingt, wenn wir weitere Fälle einbauen (Links etc.)
 scan str level
       | isOList str =   let (number,rest) = span isDigit str
-                            (dot, text) = span (=='.') rest
-                        in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scan text level
-      | otherwise =     let (restOfLine, restOfStr) = span (/='\n') str                                      
-                        in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr level
+                            (dot, afterdot) = span (=='.') rest
+                        in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scanline afterdot "" level
+      | otherwise = scanline str "" level
+-- Alte Version vom Braun
+--      | otherwise =     let (restOfLine, restOfStr) = span (/='\n') str                                      
+--                        in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr text level
 
+scanline :: String -> String -> Int -> Maybe [MDToken]
+
+
+-- Zeilenende erkennen
+scanline ('\n':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_Newline:tokens))    $ scan xs  level
+
+-- Fettschrift erkennen 
+scanline ('*':'*':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_B:tokens))    $ scanline xs "" level
+scanline ('_':'_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_B:tokens))    $ scanline xs "" level
+-- Kursivschrift erkennen
+scanline ('*':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
+scanline ('_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
+
+-- Zeichen mit backslash davor als normales Zeichen hinzufügen zB. \* oder \+
+scanline ('\\':x:xs) text level = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+-- Jedes andere Zeichen hinzufügen
+scanline (x:xs) text level = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+
+-- Ende der Rekursion
+scanline "" _ _          = Just []  
 
 -- Entscheidet, ob es der Anfang einer geordneten Liste ist, also eine Zahl gefolgt von einem Punkt
 isOList :: String -> Bool
