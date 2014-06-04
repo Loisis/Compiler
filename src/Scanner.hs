@@ -52,10 +52,9 @@ scan str level
       | isOList str =   let (number,rest) = span isDigit str
                             (dot, text) = span (=='.') rest
                         in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scan text level
- 
- -- sonst lesen wir einfach den Rest bis zum Zeilenende in ein Text-Token ein                      
-scan str level = let (restOfLine, restOfStr) = span (/='\n') str                                      
-           in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr level
+      | otherwise =     let (restOfLine, restOfStr) = span (/='\n') str                                      
+                        in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr level
+
 
 -- Entscheidet, ob es der Anfang einer geordneten Liste ist, also eine Zahl gefolgt von einem Punkt
 isOList :: String -> Bool
