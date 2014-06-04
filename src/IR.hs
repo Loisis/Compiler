@@ -8,4 +8,8 @@ data AST = Sequence [AST] -- eine Sequenz von HTML-Elementen
          | L [AST]        -- eine geordnete Liste, in der Liste müssen dann die Listenelemente stehen  
          | P String       -- ein Absatz mit dem Inhalt
          | EmptyLine      -- eine leere Zeile
+         | BS             -- Start der fettschrift
+         | BE             -- Ende der Fettschrift
+         | KS             -- Start von kursiv
+         | KE             -- ende von kursiv
     deriving (Show)

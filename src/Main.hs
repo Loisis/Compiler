@@ -10,7 +10,7 @@ main = do
     -- lese den Inhalt der Datei "test.md" als einen kompletten String ein
     input <- readFile "test.md"
     -- versuche den String zu scannen
-    let maybeTokens = scan input 0
+    let maybeTokens = scan input 0 
     putStrLn "Scanner output\n=============="
     print maybeTokens
     -- the parse
@@ -18,7 +18,7 @@ main = do
         Nothing -> putStrLn "scanner failed"
         Just tokens -> do -- der Scanner war erfolgreich
             -- versuche die Tokens zu parsen
-            let maybeAst = parse tokens
+            let maybeAst = parse tokens False False
             putStrLn "\nParser output\n============="
             print maybeAst
             case maybeAst of

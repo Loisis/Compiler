@@ -43,8 +43,8 @@ scan ('*':'*':xs) level   = maybe Nothing (\tokens -> Just (T_B:tokens))    $ sc
 scan ('_':'_':xs) level   = maybe Nothing (\tokens -> Just (T_B:tokens))    $ scan xs level
 
 -- Kursiv erkennen
-scan ('*':xs) level   = maybe Nothing (\tokens -> Just (T_B:tokens))    $ scan xs level
-scan ('_':xs) level   = maybe Nothing (\tokens -> Just (T_B:tokens))    $ scan xs level
+scan ('*':xs) level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
+scan ('_':xs) level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
 
 -- wenn wir eine Zahl mit einem Punkt lesen, dann ist es eine geordnete Liste
 -- TODO: noch sind wir sicher am Zeilenanfang, aber nicht mehr unbedingt, wenn wir weitere Fälle einbauen (Links etc.)
@@ -52,10 +52,10 @@ scan str level
       | isOList str =   let (number,rest) = span isDigit str
                             (dot, text) = span (=='.') rest
                         in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scan text level
-      | otherwise =     let (restOfLine, restOfStr) = span (/='\n') str                                      -- sonst lesen wir einfach den Rest bis zum Zeilenende in ein Text-Token ein
-                         in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr level
-                       
-
+ 
+ -- sonst lesen wir einfach den Rest bis zum Zeilenende in ein Text-Token ein                      
+scan str level = let (restOfLine, restOfStr) = span (/='\n') str                                      
+           in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr level
 
 -- Entscheidet, ob es der Anfang einer geordneten Liste ist, also eine Zahl gefolgt von einem Punkt
 isOList :: String -> Bool

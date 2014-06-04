@@ -5,32 +5,37 @@ import           IR
 import           Scanner
 
 -- Der Parser versucht aus einer Liste von MDToken einen AST zu erzeugen 
-parse :: [MDToken] -> Maybe AST
+parse :: [MDToken] -> Bool -> Bool -> Maybe AST
 -- Die leere Liste ergibt eine leere Sequenz
-parse []                       = Just $ Sequence []
+parse [] b k                      = Just $ Sequence []
 -- Zwei Zeilenumbrüche hintereinander sind eine leere Zeile, die in eine Sequenz eingeführt wird (wirklich immer?)
-parse (T_Newline:T_Newline:xs) = maybe Nothing (\(Sequence ast) -> Just $ Sequence (EmptyLine : ast)) $ parse xs
+parse (T_Newline:T_Newline:xs) b k = maybe Nothing (\(Sequence ast) -> Just $ Sequence (EmptyLine : ast)) $ parse xs b k
 -- ein einzelnes Leerzeichen ignorieren wir (für den Moment?)
-parse (T_Newline:xs)           = parse xs
+parse (T_Newline:xs) b k         = parse xs b k
 -- einem Header muss ein Text folgen. Das ergibt zusammen einen Header im AST, er wird einer Sequenz hinzugefügt
-parse (T_H i : T_Text str: xs) = maybe Nothing (\(Sequence ast) -> Just $ Sequence (H i str:ast)) $ parse xs
+parse (T_H i : T_Text str: xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (H i str:ast)) $ parse xs b k
 
+
+-- Fett erkennen
 -- unsortierte Liste:
 -- einem listitem-Marker muss auch ein Text folgen. Das gibt zusammen ein Listitem im AST.
 -- es wird mit der Hilfsfunktion addULI eingefügt
-parse (T_ULI level: T_Text str: xs) = maybe Nothing (\ast -> Just $ addULI level (LI str) ast) $ parse xs
+parse (T_ULI level: T_Text str: xs) b k = maybe Nothing (\ast -> Just $ addULI level (LI str) ast) $ parse xs b k
 
 -- sortierte Liste:
 -- einem listitem-Marker muss auch ein Text folgen. Das gibt zusammen ein Listitem im AST.
 -- es wird mit der Hilfsfunktion addLI eingefügt
-parse (T_LI i: T_Text str: xs) = maybe Nothing (\ast -> Just $ addLI (LI str) ast) $ parse xs
+parse (T_LI i: T_Text str: xs) b k = maybe Nothing (\ast -> Just $ addLI (LI str) ast) $ parse xs b k
 
 -- ein Text am Anfang gehört in einen Absatz. Damit direkt auf einander folgende Texte in einem gemeinsamen
 -- Absatz landen, wird die Hilfsfunktion addP genutzt um den Text einzufügen
-parse (T_Text str: xs)         = maybe Nothing (\ast -> Just $ addP (P str) ast) $ parse xs
+parse (T_Text str: xs) b k        = maybe Nothing (\ast -> Just $ addP (P str) ast) $ parse xs b k
 -- Der gesamte Rest wird für den Moment ignoriert. Achtung: Der Parser schlägt, in der momentanen Implementierung, nie fehl.
 -- Das kann in der Endfassung natürlich nicht so bleiben!
-parse _ = Just $ Sequence []
+parse _ _ _ = Just $ Sequence []
+
+
+
 
 -- Hilfsfunktionen für den Parser
 
