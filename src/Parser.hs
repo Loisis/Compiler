@@ -14,9 +14,17 @@ parse (T_Newline:T_Newline:xs) = maybe Nothing (\(Sequence ast) -> Just $ Sequen
 parse (T_Newline:xs)           = parse xs
 -- einem Header muss ein Text folgen. Das ergibt zusammen einen Header im AST, er wird einer Sequenz hinzugefügt
 parse (T_H i : T_Text str: xs) = maybe Nothing (\(Sequence ast) -> Just $ Sequence (H i str:ast)) $ parse xs
+
+-- unsortierte Liste:
+-- einem listitem-Marker muss auch ein Text folgen. Das gibt zusammen ein Listitem im AST.
+-- es wird mit der Hilfsfunktion addULI eingefügt
+parse (T_ULI level: T_Text str: xs) = maybe Nothing (\ast -> Just $ addULI level (LI str) ast) $ parse xs
+
+-- sortierte Liste:
 -- einem listitem-Marker muss auch ein Text folgen. Das gibt zusammen ein Listitem im AST.
 -- es wird mit der Hilfsfunktion addLI eingefügt
-parse (T_ULI i: T_Text str: xs) = maybe Nothing (\ast -> Just $ addULI (LI str) ast) $ parse xs
+parse (T_LI i: T_Text str: xs) = maybe Nothing (\ast -> Just $ addLI (LI str) ast) $ parse xs
+
 -- ein Text am Anfang gehört in einen Absatz. Damit direkt auf einander folgende Texte in einem gemeinsamen
 -- Absatz landen, wird die Hilfsfunktion addP genutzt um den Text einzufügen
 parse (T_Text str: xs)         = maybe Nothing (\ast -> Just $ addP (P str) ast) $ parse xs
@@ -26,12 +34,19 @@ parse _ = Just $ Sequence []
 
 -- Hilfsfunktionen für den Parser
 
--- Einfügen eines Listenelements in eine ungeordnete Liste
-addULI :: AST -> AST -> AST
+-- Einfügen eines Listenelements in eine geordnete Liste
+addULI :: Int -> AST ->  AST -> AST
 -- Wenn wir ein Listenelement einfügen wollen und im Rest schon eine UL haben, fügen wir das Element in die UL ein
-addULI li (Sequence (UL lis : ast)) = Sequence (UL (li:lis) : ast)
+addULI level li (Sequence (UL lis : ast)) = Sequence (UL (li:lis) : ast)
 -- Andernfalls erzeugen wir eine neue UL.
-addULI li (Sequence ast) = Sequence (UL [li] : ast)
+addULI level li (Sequence ast) = Sequence (UL [li] : ast)
+
+-- Einfügen eines Listenelements in eine eordnete Liste
+addLI :: AST -> AST -> AST
+-- Wenn wir ein Listenelement einfügen wollen und im Rest schon eine UL haben, fügen wir das Element in die UL ein
+addLI li (Sequence (L lis : ast)) = Sequence (L (li:lis) : ast)
+-- Andernfalls erzeugen wir eine neue UL.
+addLI li (Sequence ast) = Sequence (L [li] : ast)
 
 -- Mehrere aufeinander folgende Texte werden zu einem Absatz zusammengefügt.
 addP :: AST -> AST -> AST
@@ -39,3 +54,7 @@ addP :: AST -> AST -> AST
 addP (P str1) (Sequence (P str2 : ast)) = Sequence (P (str1 ++ "\n" ++ str2) : ast)
 -- Andernfalls bleibt der Absatz alleine
 addP p (Sequence ast) = Sequence (p : ast)
+
+sameLevel :: [AST] -> i -> Bool
+sameLevel ast i = True
+
