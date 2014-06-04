@@ -1,26 +1,22 @@
 # Willkommen
 
 ## in der H2
-
-*asdjflsdf*
-
-__asldjfjlasdf__
-
-jasldfj**Fett in der Mitte **
-- erstes Bullet 
-- zweites Bullet
-- drittes Bullet
-    - Erste unterliste :-)
-    2. Erste numerierte unterliste
-        1. Erste numemerierte unterunterliste
-
-### noch H3
-
--   huhu
--   toll
-
 ########## und trotz vieler vieler Hashes "nur" H6
 
+Das *Haus* wurde und die _Ente_ wurden kursiv geschrieben  
+Die __Terasse__ und das **Zebra** dafür fett.
+
+**Hunde** sind auch fett.
+
+- erstes Bullet 
+- zweites Bullet
++ Liste in der liste
++ noch ein elmement davon
+- drittes Bullet, dieses einthält ein schönes Sternchen: \*
+
+\\ \p \* \. \+ \z
+
+Text: 2 + 3 = 12
 Hier steht einfach
 nur Text.
 
@@ -30,14 +26,3 @@ ist
 ein
 zweiter
 Paragraph.
-    
-jhgjghgjgghgjh
-
--   toll
-
-
-#### Jetzt kommt die geordnete Liste
-
-1. Ist das nicht geil
-3. Ne 
-223. eigentlich **nicht** so 

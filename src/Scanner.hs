@@ -8,9 +8,10 @@ data MDToken = T_Newline     -- '\n'
              | T_H Int       -- ein Header mit der Anzahl der Hashes
              | T_Text String -- Text, aber immer nur bis zum Zeilenende, Text über mehrere Zeilen muss vom Parser zusammengesetzt werden
              | T_ULI Int     -- ein ungeordnetes Listenelement-Marker mit der (Einrückungs-)Ebene
-             | T_LI Int   -- ein  Listenelemnt-Marker mit der (Einrückungs-) Ebene
-             | T_B         --  Fettschrift
-             | T_K         --- Kursiv
+             | T_LI Int      -- ein  Listenelemnt-Marker mit der (Einrückungs-) Ebene
+             | T_B           -- Fettschrift
+             | T_K           -- Kursiv
+             | T_ZU          -- Zeilenumbruch, durch 2 (TODO: oder auch mehr) Leerzeichen am Zeilenende
     deriving (Show, Eq)
 
 scan :: String -> Int -> Maybe [MDToken]
@@ -61,6 +62,8 @@ scan str level
 
 scanline :: String -> String -> Int -> Maybe [MDToken]
 
+-- Explizieten Zeilenumbruch erkennen
+scanline (' ':' ':'\n':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_ZU:T_Newline:tokens))    $ scan xs  level
 
 -- Zeilenende erkennen
 scanline ('\n':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_Newline:tokens))    $ scan xs  level
@@ -72,8 +75,25 @@ scanline ('_':'_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T
 scanline ('*':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
 scanline ('_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
 
--- Zeichen mit backslash davor als normales Zeichen hinzufügen zB. \* oder \+
-scanline ('\\':x:xs) text level = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+-- Escape Sequenzen: Eigentlich nur \,`,*,_,{,},[,],(,),#,ü,-,.,! -> TODO: Ersetzen mit diesen Zeichen hier!
+scanline ('\\':x:xs) text level 
+                        | x == '\\'= maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '`' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '*' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '_' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '{' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '}' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '[' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == ']' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '(' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == ')' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '#' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '+' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '-' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '.' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        | x == '!' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
+                        
+
 -- Jedes andere Zeichen hinzufügen
 scanline (x:xs) text level = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
 

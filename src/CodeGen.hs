@@ -18,16 +18,23 @@ generateHTML' (Sequence (a:as)) = generateHTML' a ++ "\n" ++ generateHTML' (Sequ
 generateHTML' (H i str) = "<h" ++ show i ++ ">" ++ str ++ "</h" ++ show i ++ ">\n"
 
 -- eine ungeordnete Liste
-generateHTML' (UL lis) = "<ul>\n" ++ concat (map generateHTML' lis) ++ "</ul>\n"
+generateHTML' (ULS) = "<ul>\n"
+generateHTML' (ULE) = "</ul>\n"
 
 -- eine geordnete Liste
-generateHTML' (L lis) = "<ol>\n" ++ concat (map generateHTML' lis) ++ "</ol>\n"
+generateHTML' (OLS) = "<ol>\n"
+generateHTML' (OLE) = "</ol>\n"
 
 -- Listenelemente
-generateHTML' (LI str) = "<li>" ++ str ++ "</li>\n"
+generateHTML' (LIS) = "<li>\n"
+generateHTML' (LIE) = "</li>\n"
 
 -- ein Absatz
-generateHTML' (P str)  = "<p>" ++ str ++ "</p>\n"
+--generateHTML' (P str)  = "<p>" ++ str ++ "</p>\n"
+generateHTML' (P str)  =  str
+
+-- Explizieter Zeilenumbruch
+generateHTML' (EZU) = "<br>"
 
 -- Fett + kursiv
 generateHTML' (BS)  = "<b>"
