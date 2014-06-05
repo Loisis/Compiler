@@ -30,10 +30,10 @@ scan str@('#':xs) level =
 -- Wennn ein Tab gelesen wird muss das Level erhöht werden
 scan (' ':' ':' ':' ':xs) level   = maybe Nothing (\tokens -> Just (tokens)) $ scan xs (level +1)
 
--- Zeilenumbrüche aufheben um im Parser Leerzeilen zu erkennen -> Level auf 0 setzen
-scan ('\n':xs) level   = maybe Nothing (\tokens -> Just (T_Newline:tokens)) $ scan xs 0
+-- Zeilenumbrüche aufheben um im Parser Leerzeilen zu erkennen -> Level auf 1 setzen
+scan ('\n':xs) level   = maybe Nothing (\tokens -> Just (T_Newline:tokens)) $ scan xs 1
 
--- wenn das '-' am Zeilenanfang gelesen wird, ist es Level 0
+-- wenn das '-' am Zeilenanfang gelesen wird, ist es Level 1
 -- TODO: noch sind wir sicher am Zeilenanfang, aber nicht mehr unbedingt, wenn wir weitere Fälle einbauen (Links etc.)
 scan ('-':' ':xs) level    = maybe Nothing (\tokens -> Just (T_ULI level:tokens))    $ scan xs level
 scan ('*':' ':xs) level   = maybe Nothing (\tokens -> Just (T_ULI level:tokens))    $ scan xs level
@@ -54,8 +54,8 @@ scan ('_':xs)level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs
 scan str level
       | isOList str =   let (number,rest) = span isDigit str
                             (dot, afterdot) = span (=='.') rest
-                        in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scanline afterdot "" level
-      | otherwise = scanline str "" level
+                        in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scanline afterdot "" 1
+      | otherwise = scanline str "" 1
 -- Alte Version vom Braun
 --      | otherwise =     let (restOfLine, restOfStr) = span (/='\n') str                                      
 --                        in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr text level
@@ -75,7 +75,7 @@ scanline ('_':'_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T
 scanline ('*':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
 scanline ('_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
 
--- Escape Sequenzen: Eigentlich nur \,`,*,_,{,},[,],(,),#,ü,-,.,! -> TODO: Ersetzen mit diesen Zeichen hier!
+-- Escape Sequenzen: 
 scanline ('\\':x:xs) text level 
                         | x == '\\'= maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
                         | x == '`' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x]) level
