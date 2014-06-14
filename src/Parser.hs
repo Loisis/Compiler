@@ -20,6 +20,17 @@ parse (T_Newline:xs) b k         = parse xs b k
 -- einem Header muss ein Text folgen. Das ergibt zusammen einen Header im AST, er wird einer Sequenz hinzugefügt
 parse (T_H i : T_Text str: xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (H i str:ast)) $ parse xs b k
 
+-- Inline Code erkennen
+parse (T_Code : T_Text str : T_Code : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Code str:ast)) $ parse xs b k
+
+-- Links erkennen
+parse (T_SpKlA : T_Text url : T_SpKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A url url:ast)) $ parse xs b k
+parse (T_EcKlA : T_Text str : T_EcKlZ : T_RuKlA : T_Text url : T_RuKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A url str:ast)) $ parse xs b k
+parse (T_EcKlA : T_Text str : T_EcKlZ : T_EcKlA : T_Text id : T_EcKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A id str:ast)) $ parse xs b k
+
+-- Bilder erkennen
+parse (T_ExMark : T_EcKlA : T_Text alt : T_EcKlZ : T_RuKlA : T_Text url : T_RuKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Img url alt:ast)) $ parse xs b k
+parse (T_ExMark : T_EcKlA : T_Text alt : T_EcKlZ : T_EcKlA : T_Text id : T_EcKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Img id alt:ast)) $ parse xs b k
 
 -- Fett erkennen
 parse(T_B:xs) b k  

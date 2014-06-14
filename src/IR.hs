@@ -15,5 +15,8 @@ data AST = Sequence [AST] -- eine Sequenz von HTML-Elementen
          | BE             -- Ende der Fettschrift
          | KS             -- Start von kursiv
          | KE             -- ende von kursiv
+         | Code String    -- Inline Code
+         | A String String
+         | Img String String
          | EZU            -- Expliziter Zeilenumbruch (2 Leerzeichen vor zeilenumbruch)
     deriving (Show)

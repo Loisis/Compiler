@@ -12,7 +12,7 @@ generateHTML ast = "<html>\n<head></head>\n<body>\n" ++ generateHTML' ast ++ "</
 generateHTML' :: AST -> String
 
 -- eine Sequenz
-generateHTML' (Sequence (a:as)) = generateHTML' a ++ "\n" ++ generateHTML' (Sequence as)
+generateHTML' (Sequence (a:as)) = generateHTML' a ++ generateHTML' (Sequence as)
 
 -- eine Überschrift
 generateHTML' (H i str) = "<h" ++ show i ++ ">" ++ str ++ "</h" ++ show i ++ ">\n"
@@ -26,7 +26,7 @@ generateHTML' (OLS) = "<ol>\n"
 generateHTML' (OLE) = "</ol>\n"
 
 -- Listenelemente
-generateHTML' (LIS) = "<li>\n"
+generateHTML' (LIS) = "<li>"
 generateHTML' (LIE) = "</li>\n"
 
 -- ein Absatz
@@ -35,6 +35,15 @@ generateHTML' (P str)  =  str
 
 -- Explizieter Zeilenumbruch
 generateHTML' (EZU) = "<br>"
+
+-- ein Code
+generateHTML' (Code str) = "<code>" ++ str ++ "</code>"
+
+-- ein Link
+generateHTML' (A url str) = "<a src=" ++ show url ++ ">" ++ str ++ "</a>"
+
+-- ein Bild
+generateHTML' (Img url str) = "<img src=" ++ show url ++ " alt =" ++ str ++ "/>\n"
 
 -- Fett + kursiv
 generateHTML' (BS)  = "<b>"
