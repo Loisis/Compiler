@@ -11,6 +11,9 @@ parse :: [MDToken] -> Bool -> Bool -> Maybe AST
 -- Die leere Liste ergibt eine leere Sequenz
 parse [] b k                      = Just $ Sequence []
 
+-- Code-Block erkennen
+parse(T_CB level:xs) b k =  maybe Nothing (\(Sequence ast) -> Just $ Sequence (SCB:ast)) $ parseCodeBlock xs b k level
+
 -- 2 Leerzeichen hintereinander vor dem Zeilenumbruch erzeugen expliziten Zeilenumbruch
 parse(T_ZU:xs) b k = maybe Nothing (\(Sequence ast) -> Just $ Sequence (EZU : ast)) $ parse xs b k
 -- Zwei Zeilenumbrüche hintereinander sind eine leere Zeile, die in eine Sequenz eingeführt wird (wirklich immer?)
@@ -136,7 +139,14 @@ closeLists xs lh l1 l2 b k ulist
                         
 closeLists _ _ _ _ _ _ _ = Just $ Sequence []
 
+-- Einen CodeBlock hinzufügen, für alle Level, die Höher als 1 sind werden stattdessen 4 dem nachfolgenden Text vorangestellt
+parseCodeBlock :: [MDToken] -> Bool -> Bool -> Int -> Maybe AST
+parseCodeBlock [] _ _ _   = Just $ Sequence [] 
 
+parseCodeBlock all@(T_Text str:T_Newline:T_CB newLevel:xs) b k level  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (P (addLeerzeichen str level):EZU:ast)) $ parseCodeBlock xs b k newLevel 
+
+parseCodeBlock all@(T_Text str:T_Newline:xs) b k level  =  maybe Nothing (\(Sequence ast) -> Just $ Sequence (P (addLeerzeichen str level):ECB:ast)) $ parse xs b k
+   
 {- 
 -- Einfügen eines Listenelements in eine geordnete Liste
 addULI :: Int -> AST ->  AST -> AST
@@ -150,8 +160,13 @@ addLI :: AST -> AST -> AST
 -- Wenn wir ein Listenelement einfügen wollen und im Rest schon eine UL haben, fügen wir das Element in die UL ein
 addLI li (Sequence (L lis : ast)) = Sequence (L (li:lis) : ast)
 -- Andernfalls erzeugen wir eine neue UL.
-addLI li (Sequence ast) = Sequence (L [li] : ast)
+addLI li (Sequence ast) = Sequence (L li] : ast)
 -}
+
+addLeerzeichen :: String -> Int -> String
+addLeerzeichen text level 
+            | level > 0 = addLeerzeichen ("    " ++ text) (level-1)
+            | otherwise = text
 
 -- Mehrere aufeinander folgende Texte werden zu einem Absatz zusammengefügt.
 addP :: AST -> AST -> AST

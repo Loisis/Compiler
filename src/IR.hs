@@ -14,7 +14,9 @@ data AST = Sequence [AST]      -- eine Sequenz von HTML-Elementen
          | BS                  -- Start der fettschrift
          | BE                  -- Ende der Fettschrift
          | KS                  -- Start von kursiv
-         | KE                  -- ende von kursiv
+         | KE                  -- ende von kursi
+         | SCB            -- Start of Code Block
+         | ECB            -- Ende vom Code Block
          | Code String         -- Inline Code
          | A String String     -- Link mit (1)Url und (2)Text
          | Img String String   -- Bild mit (1)Url und (2)Alt

@@ -42,6 +42,10 @@ generateHTML' (Code str) = "<pre><code>" ++ str ++ "</code></pre>"
 -- ein Link
 generateHTML' (A url str) = "<a href=" ++ show url ++ ">" ++ str ++ "</a>"
 
+-- Code Block
+generateHTML' (SCB) = "\n<pre><code>\n"
+generateHTML' (ECB) = "\n</code></pre>\n"
+
 -- ein Bild
 generateHTML' (Img url str) = "<img src=" ++ show url ++ " alt =" ++ show str ++ " />\n"
 
