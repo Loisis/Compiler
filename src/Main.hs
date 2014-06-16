@@ -4,6 +4,7 @@ import           CodeGen
 import           IR
 import           Parser
 import           Scanner
+import           Referencer
 
 main :: IO ()
 main = do
@@ -24,6 +25,13 @@ main = do
             case maybeAst of
                 Nothing -> putStrLn "parser failed"
                 Just ast -> do -- der Parser war erfolgreich
-                    putStrLn "\nGenerated HTML\n=============="
-                    -- generiere HTML und gebe es aus
-                    putStrLn $ generateHTML ast
+                    -- versuche Referenzen zu finden und anzupassen
+                    let maybeAst = reference ast
+                    putStrLn "\nReferencer output\n============="
+                    print maybeAst
+                    case maybeAst of
+                        Nothing -> putStrLn "referencer failed"
+                        Just ast -> do -- der Referencer war erfolgreich
+                        putStrLn "\nGenerated HTML\n=============="
+                        -- generiere HTML und gebe es aus
+                        putStrLn $ generateHTML ast

@@ -29,13 +29,23 @@ Hier steht einfach
 nur Text.
 
 
+[id]: http://www.google.de/
+
 
 Das sollte ein `Inline Code` sein
 
+![Das ist ein Bild][bild]
+
+[Webseite][id]
+
+[id][]
 
 [Webpage zur Veranstaltung](http://ob.cs.hm.edu/lectures/compiler)
 
 <http://www.google.de/>
+
+
+[bild]: /path/image.png
 
 Und
 das 

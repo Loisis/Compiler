@@ -21,12 +21,19 @@ parse (T_Newline:xs) b k         = parse xs b k
 parse (T_H i : T_Text str: xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (H i str:ast)) $ parse xs b k
 
 -- Inline Code erkennen
-parse (T_Code : T_Text str : T_Code : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Code str:ast)) $ parse xs b k
+parse (T_Backquote : T_Text str : T_Backquote : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Code str:ast)) $ parse xs b k
+
+-- Referenzen erkennen
+parse (T_EcKlA : T_Text id : T_EcKlZ : T_Text str : xs) b k
+    | head str == ':' =
+        let url = drop 1 str
+        in maybe Nothing (\(Sequence ast) -> Just $ Sequence (R url id:ast)) $ parse xs b k
 
 -- Links erkennen
 parse (T_SpKlA : T_Text url : T_SpKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A url url:ast)) $ parse xs b k
 parse (T_EcKlA : T_Text str : T_EcKlZ : T_RuKlA : T_Text url : T_RuKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A url str:ast)) $ parse xs b k
 parse (T_EcKlA : T_Text str : T_EcKlZ : T_EcKlA : T_Text id : T_EcKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A id str:ast)) $ parse xs b k
+parse (T_EcKlA : T_Text id : T_EcKlZ : T_EcKlA : T_EcKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (A id id:ast)) $ parse xs b k
 
 -- Bilder erkennen
 parse (T_ExMark : T_EcKlA : T_Text alt : T_EcKlZ : T_RuKlA : T_Text url : T_RuKlZ : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Img url alt:ast)) $ parse xs b k
@@ -74,7 +81,7 @@ parseOList (T_B:xs) lh l b k
 parseOList (T_K:xs) lh l b k 
                              | k = maybe Nothing (\(Sequence ast) -> Just $ Sequence (KE : ast)) $ parseOList xs lh l b False
                              | otherwise = maybe Nothing (\(Sequence ast) -> Just $ Sequence (KS : ast)) $ parseOList xs lh l b True
-parseOList (T_Text str:xs) lh l b k =   maybe Nothing (\(Sequence ast) -> Just $ Sequence (P str:ast)) $ parseOList xs lh l b k 
+parseOList (T_Text str:xs) lh l b k =   maybe Nothing (\(Sequence ast) -> Just $ Sequence (P str:ast)) $ parseOList xs lh l b k
 -- Neuer Listeneintrag: Entweder in die gleiche Liste oder in eine neue oder die Liste beenden und in die alte Liste
 parseOList (T_Newline:T_LI level:xs) lh l b k 
                                         | l == level =   maybe Nothing (\(Sequence ast) -> Just $ Sequence (LIE:LIS:ast)) $ parseOList xs lh level b k
@@ -152,6 +159,3 @@ addP :: AST -> AST -> AST
 addP (P str1) (Sequence (P str2 : ast)) = Sequence (P (str1 ++ "\n" ++ str2) : ast)
 -- Andernfalls bleibt der Absatz alleine
 addP p (Sequence ast) = Sequence (p : ast)
-
-
-

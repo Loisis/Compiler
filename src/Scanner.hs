@@ -18,7 +18,7 @@ data MDToken = T_Newline     -- '\n'
              | T_RuKlA       -- Runde Klammer auf
              | T_RuKlZ       -- Runde Klammer zu
              | T_ExMark      -- Ausrufezeichen
-             | T_Code        -- Inline Code
+             | T_Backquote   -- `
              | T_ZU          -- Zeilenumbruch, durch 2 (TODO: oder auch mehr) Leerzeichen am Zeilenende
     deriving (Show, Eq)
 
@@ -55,8 +55,8 @@ scan ('_':'_':xs) level   = maybe Nothing (\tokens -> Just (T_B:tokens))    $ sc
 scan ('*':xs) level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
 scan ('_':xs)level   = maybe Nothing (\tokens -> Just (T_K:tokens))    $ scan xs level
 
--- Inline Code erkennen
-scan ('`':xs)level   = maybe Nothing (\tokens -> Just (T_Code:tokens))    $ scan xs level
+-- Backquote erkennen
+scan ('`':xs)level   = maybe Nothing (\tokens -> Just (T_Backquote:tokens))    $ scan xs level
 
 -- Klammern erkennen
 scan ('<':xs) level   = maybe Nothing (\tokens -> Just (T_SpKlA:tokens))    $ scan xs level
@@ -94,8 +94,8 @@ scanline ('_':'_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T
 scanline ('*':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
 scanline ('_':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs "" level
 
--- Inline Code erkennen
-scanline ('`':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_Code:tokens))    $ scan xs level
+-- Backquote erkennen
+scanline ('`':xs) text level = maybe Nothing (\tokens -> Just (T_Text text:T_Backquote:tokens))    $ scan xs level
 
 -- Klammern erkennen
 scanline ('<':xs) text level   = maybe Nothing (\tokens -> Just (T_Text text:T_SpKlA:tokens))    $ scan xs level
