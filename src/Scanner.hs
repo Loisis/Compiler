@@ -19,6 +19,7 @@ data MDToken = T_Newline     -- '\n'
              | T_RuKlZ       -- Runde Klammer zu
              | T_ExMark      -- Ausrufezeichen
              | T_Backquote   -- `
+             | T_DoubleBackquote   -- ``
              | T_ZU          -- Zeilenumbruch, durch 2 (TODO: oder auch mehr) Leerzeichen am Zeilenende
              | T_CB Int          -- Codeblock
     deriving (Show, Eq)
@@ -71,6 +72,7 @@ scanline ('_':'_':xs) text = addTextAndToken T_B text xs
 scanline ('*':xs) text = addTextAndToken T_B text xs 
 scanline ('_':xs) text = addTextAndToken T_K text xs 
 -- Backquote erkennen
+scanline ('`':'`':xs) text = addTextAndToken T_DoubleBackquote text xs 
 scanline ('`':xs) text = addTextAndToken T_Backquote text xs 
 -- Klammern erkennen
 scanline ('<':xs) text = addTextAndToken T_SpKlA text xs
