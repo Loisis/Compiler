@@ -69,7 +69,7 @@ scanline ('\n':xs) text = addTextAndToken T_Newline text xs
 scanline ('*':'*':xs) text = addTextAndToken T_B text xs   
 scanline ('_':'_':xs) text = addTextAndToken T_B text xs 
 -- Kursivschrift erkennen
-scanline ('*':xs) text = addTextAndToken T_B text xs 
+scanline ('*':xs) text = addTextAndToken T_K text xs 
 scanline ('_':xs) text = addTextAndToken T_K text xs 
 -- Backquote erkennen
 scanline ('`':'`':xs) text = addTextAndToken T_DoubleBackquote text xs 
