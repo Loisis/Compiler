@@ -19,6 +19,7 @@ data MDToken = T_Newline     -- '\n'
              | T_RuKlZ       -- Runde Klammer zu
              | T_ExMark      -- Ausrufezeichen
              | T_Backquote   -- `
+             | T_DoubleBackquote   -- ``
              | T_ZU          -- Zeilenumbruch, durch 2 (TODO: oder auch mehr) Leerzeichen am Zeilenende
              | T_CB Int          -- Codeblock
     deriving (Show, Eq)
@@ -80,7 +81,12 @@ scanline ('*':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens)
 scanline ('_':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs ""
 
 -- Backquote erkennen
-scanline ('`':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_Backquote:tokens))    $ scanline xs "" 
+--scanline ('`':'`':xs) text
+--            | text == "" = maybe Nothing (\tokens -> Just (T_DoubleBackquote:tokens))    $ scanline xs ""
+--            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_DoubleBackquote:tokens))    $ scanline xs ""
+scanline ('`':xs) text
+            | text == "" = maybe Nothing (\tokens -> Just (T_Backquote:tokens))    $ scanline xs ""
+            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_Backquote:tokens))    $ scanline xs ""
 
 -- Klammern erkennen
 scanline ('<':xs) text 

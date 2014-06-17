@@ -24,7 +24,9 @@ parse (T_Newline:xs) b k         = parse xs b k
 parse (T_H i : T_Text str: xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (H i str:ast)) $ parse xs b k
 
 -- Inline Code erkennen
-parse (T_Backquote : T_Text str : T_Backquote : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Code str:ast)) $ parse xs b k
+--parse (T_DoubleBackquote : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (CS:ast)) $ parseCode xs b k
+parse (T_Backquote : T_Backquote : xs) b k = maybe Nothing (\(Sequence ast) -> Just $ Sequence (CS:ast)) $ parseCode xs b k
+parse (T_Backquote : T_Text str : T_Backquote : xs) b k  = maybe Nothing (\(Sequence ast) -> Just $ Sequence (Code str :ast)) $ parse xs b k
 
 -- Referenzen erkennen
 parse (T_EcKlA : T_Text id : T_EcKlZ : T_Text str : xs) b k
@@ -124,6 +126,15 @@ parseUList (T_Newline:xs) lh l b k =   maybe Nothing (\(Sequence ast) -> Just $ 
 parseUList (T_ZU:xs) lh l b k =   maybe Nothing (\(Sequence ast) -> Just $ Sequence (LIE:ast)) $ closeLists xs lh l 0 b k False
 
 parseUList _ _ _ _ _ = Just $ Sequence []
+
+
+parseCode :: [MDToken] -> Bool -> Bool -> Maybe AST
+parseCode (T_Text str : T_Backquote : T_Backquote : xs) b k
+    | last str == ' ' = maybe Nothing (\(Sequence ast) -> Just $ Sequence (P str:CE:ast)) $ parse xs b k
+    | otherwise = maybe Nothing (\(Sequence ast) -> Just $ Sequence (P (str ++ "``"):ast)) $ parseCode xs b k
+parseCode (T_Text str : xs) b k   = maybe Nothing (\(Sequence ast) -> Just $ Sequence (P str:ast)) $ parseCode xs b k
+parseCode (T_Backquote : xs) b k   = maybe Nothing (\(Sequence ast) -> Just $ Sequence (P "`":ast)) $ parseCode xs b k
+
 
 -- Hilfsfunktionen für den Parser
 

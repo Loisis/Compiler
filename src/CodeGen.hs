@@ -6,7 +6,7 @@ import IR
 -- HTML generieren
 -- zuerst das äußere Gerüst
 generateHTML :: AST -> String
-generateHTML ast = "<html>\n<head></head>\n<body>\n" ++ generateHTML' ast ++ "</body>\n</html>"
+generateHTML ast = "<html>\n<head></head>\n<body>\n" ++ generateHTML' ast ++ "\n</body>\n</html>"
 
 -- dann Elemente für jeden AST-Knoten
 generateHTML' :: AST -> String
@@ -36,13 +36,15 @@ generateHTML' (P str)  =  str
 -- Explizieter Zeilenumbruch
 generateHTML' (EZU) = "<br>"
 
--- ein Code
-generateHTML' (Code str) = "<pre><code>" ++ str ++ "</code></pre>"
-
 -- ein Link
 generateHTML' (A url str) = "<a href=" ++ show url ++ ">" ++ str ++ "</a>"
 
--- Code Block
+-- ein Inline Code
+generateHTML' (CS) = "<code>"
+generateHTML' (CE) = "<code>"
+generateHTML' (Code str) = "<code>" ++ str ++ "</code>"
+
+-- ein Code Block
 generateHTML' (SCB) = "\n<pre><code>\n"
 generateHTML' (ECB) = "\n</code></pre>\n"
 

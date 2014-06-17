@@ -53,3 +53,8 @@ Das sollte ein `Inline Code` sein
          3. Zeile (Keine Liste) und noch ein Leerzeichen weiter
     Noch Code block
 wieder nur Text
+
+`` ` ``
+
+`` Im Code ` ist das. ``
+
