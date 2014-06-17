@@ -22,4 +22,4 @@ data AST = Sequence [AST]      -- eine Sequenz von HTML-Elementen
          | Img String String   -- Bild mit (1)Url und (2)Alt
          | R String String     -- Referenz mit (1)Url und (2)Id
          | EZU                 -- Expliziter Zeilenumbruch (2 Leerzeichen vor zeilenumbruch)
-    deriving (Show)
+    deriving (Show,Eq)

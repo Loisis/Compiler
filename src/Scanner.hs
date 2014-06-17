@@ -37,17 +37,16 @@ scan str@('#':xs) level =
     in maybe Nothing (\tokens -> Just (T_H level:tokens))      $ scanline rest ""
 
 -- Wennn ein Tab gelesen wird muss das Level erhöht werden
-scan (' ':' ':' ':' ':xs) level   = maybe Nothing (\tokens -> Just (tokens)) $ scan xs (level +1)
+scan (' ':' ':' ':' ':xs) level   =  scan xs (level +1)
 
 -- Zeilenumbrüche aufheben um im Parser Leerzeilen zu erkennen -> Level auf 1 setzen
-scan ('\n':xs) level   = maybe Nothing (\tokens -> Just (T_Newline:tokens)) $ scan xs 1
+scan ('\n':xs) level   = addTextAndToken T_Newline "" xs
 
 -- wenn das '-' am Zeilenanfang gelesen wird, ist es Level 1
 -- TODO: noch sind wir sicher am Zeilenanfang, aber nicht mehr unbedingt, wenn wir weitere Fälle einbauen (Links etc.)
-scan ('-':' ':xs) level    = maybe Nothing (\tokens -> Just (T_ULI level:tokens))    $ scanline xs ""
-scan ('*':' ':xs) level   = maybe Nothing (\tokens -> Just (T_ULI level:tokens))    $ scanline xs ""
-scan ('+':' ':xs) level   = maybe Nothing (\tokens -> Just (T_ULI level:tokens))    $ scanline xs ""
-
+scan ('-':' ':xs) level   =  addTextAndToken (T_ULI level)"" xs
+scan ('*':' ':xs) level   =  addTextAndToken (T_ULI level)"" xs
+scan ('+':' ':xs) level   =  addTextAndToken (T_ULI level)"" xs
 
 -- wenn wir eine Zahl mit einem Punkt lesen, dann ist es eine geordnete Liste
 scan str level
@@ -56,9 +55,6 @@ scan str level
                         in maybe Nothing (\tokens -> Just (T_LI level:tokens))    $ scanline afterdot ""
       | level /= 1 = maybe Nothing (\tokens -> Just (T_CB level:tokens))    $ scanCodeBlockLine str ""
       | otherwise = scanline str ""
--- Alte Version vom Braun
---      | otherwise =     let (restOfLine, restOfStr) = span (/='\n') str                                      
---                        in maybe Nothing (\tokens -> Just (T_Text restOfLine:tokens)) $ scan restOfStr text level
 
 scanline :: String -> String -> Maybe [MDToken]
 
@@ -66,51 +62,24 @@ scanline :: String -> String -> Maybe [MDToken]
 scanline (' ':' ':'\n':xs) text
                 | text == "" = maybe Nothing (\tokens -> Just (T_ZU:T_Newline:tokens))    $ scan xs 1
                 | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_ZU:T_Newline:tokens))    $ scan xs 1
-
 -- Zeilenende erkennen
-scanline ('\n':xs) text
-            | text == "" = maybe Nothing (\tokens -> Just (T_Newline:tokens))    $ scan xs 1
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_Newline:tokens))    $ scan xs 1
-
+scanline ('\n':xs) text = addTextAndToken T_Newline text xs 
 -- Fettschrift erkennen 
-scanline ('*':'*':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_B:tokens))    $ scanline xs ""
-scanline ('_':'_':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_B:tokens))    $ scanline xs ""
+scanline ('*':'*':xs) text = addTextAndToken T_B text xs   
+scanline ('_':'_':xs) text = addTextAndToken T_B text xs 
 -- Kursivschrift erkennen
-scanline ('*':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs ""
-scanline ('_':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_K:tokens))    $ scanline xs ""
-
+scanline ('*':xs) text = addTextAndToken T_B text xs 
+scanline ('_':xs) text = addTextAndToken T_K text xs 
 -- Backquote erkennen
-scanline ('`':xs) text = maybe Nothing (\tokens -> Just (T_Text text:T_Backquote:tokens))    $ scanline xs "" 
-
+scanline ('`':xs) text = addTextAndToken T_Backquote text xs 
 -- Klammern erkennen
-scanline ('<':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_SpKlA:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_SpKlA:tokens))    $ scanline xs ""
-         
-scanline ('>':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_SpKlZ:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_SpKlZ:tokens))    $ scanline xs ""
-    
-scanline ('[':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_EcKlA:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_EcKlA:tokens))    $ scanline xs ""
-            
-scanline (']':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_EcKlZ:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_EcKlZ:tokens))    $ scanline xs ""
-            
-scanline ('(':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_RuKlA:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_RuKlA:tokens))    $ scanline xs ""
-            
-scanline (')':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_RuKlZ:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_RuKlZ:tokens))    $ scanline xs ""
-            
-scanline ('!':xs) text 
-            | text == "" = maybe Nothing (\tokens -> Just (T_ExMark:tokens))    $ scanline xs ""
-            | otherwise = maybe Nothing (\tokens -> Just (T_Text text:T_ExMark:tokens))    $ scanline xs ""
-            
+scanline ('<':xs) text = addTextAndToken T_SpKlA text xs
+scanline ('>':xs) text = addTextAndToken T_SpKlZ text xs
+scanline ('[':xs) text = addTextAndToken T_EcKlA text xs
+scanline (']':xs) text = addTextAndToken T_EcKlZ text xs
+scanline ('(':xs) text = addTextAndToken T_RuKlA text xs
+scanline (')':xs) text = addTextAndToken T_RuKlZ text xs
+scanline ('!':xs) text = addTextAndToken T_ExMark text xs
 -- Escape Sequenzen: 
 scanline ('\\':x:xs) text 
                         | x == '\\'= maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x])
@@ -128,23 +97,24 @@ scanline ('\\':x:xs) text
                         | x == '-' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x])
                         | x == '.' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x])
                         | x == '!' = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x])
-                        
-
 -- Jedes andere Zeichen hinzufügen
 scanline (x:xs) text = maybe Nothing (\tokens -> Just (tokens)) $ scanline xs (text ++ [x])
-
 -- Ende der Rekursion
 scanline "" _   = Just []  
 
 
 scanCodeBlockLine :: String -> String -> Maybe [MDToken]
-
--- Ende der Rekursionen 
-scanCodeBlockLine "" _  = Just []
-
 scanCodeBlockLine (x:xs) text  
                      | x == '\n' = maybe Nothing(\tokens -> Just (T_Text text:T_Newline:tokens)) $ scan xs 1
                      | otherwise =  maybe Nothing (\tokens -> Just (tokens)) $ scanCodeBlockLine xs (text ++ [x]) 
+
+
+addTextAndToken :: MDToken -> String -> String -> Maybe [MDToken]
+addTextAndToken token text xs
+        | token == T_Newline && text == "" = maybe Nothing (\tokens -> Just (token:tokens)) $ scan xs 1
+        | token == T_Newline =  maybe Nothing (\tokens -> Just (T_Text text:token:tokens)) $ scan xs 1
+        | text == "" = maybe Nothing (\tokens -> Just (token:tokens)) $ scanline xs ""
+        | otherwise = maybe Nothing (\tokens -> Just (T_Text text:token:tokens)) $ scanline xs ""
 
 
 -- Entscheidet, ob es der Anfang einer geordneten Liste ist, also eine Zahl gefolgt von einem Punkt
